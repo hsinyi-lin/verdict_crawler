@@ -18,10 +18,13 @@ class VerdictSpider(scrapy.Spider):
             for year in range(107, 112):
                 kw = f'{area}地方法院刑事簡易判決 {year}年度簡字第 竊盜罪'
                 for page in range(1,26):
-                    yield scrapy.Request(
+                    request = scrapy.Request(
                         url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?kw={kw}&judtype=JUDBOOK&page={page}', 
                         callback=self.parse
                     )
+                    request.meta['year'] = year
+
+                    yield request
 
 
     def parse(self, response):
@@ -36,7 +39,7 @@ class VerdictSpider(scrapy.Spider):
                 data = dict()
 
                 title_list = re.split(r'[,\s]+',tr_tag.getText().strip())
-                if title_list[-1] != '竊盜' or title_list[3] != '簡':
+                if title_list[-1] != '竊盜' or title_list[3] != '簡' or title_list[2] != str(response.meta['year']):
                     continue
 
                 # 標題、日期、年度、犯罪類型
@@ -94,14 +97,14 @@ class VerdictSpider(scrapy.Spider):
             
 
             # 取得犯罪事實標籤
-            incident = htmlcontent.find('div', text=re.compile('\s犯罪事實'))
+            incident = htmlcontent.find('div', text='　　　　犯罪事實')
 
             # 如果沒有犯罪事實就跳下一個判決書
             # if isinstance(incident, type(None)):
             #     continue
             
             # 取得犯罪事實第一段
-            data['incident'] = incident.find_next_sibling('div').text[2:]
+            data['incident'] = incident.find_next_sibling('div').text[2:].strip()
         #     # 解析法條的ajax 連結以取得資料，取得id
             parsed_url = urlparse(data['url'])
             captured_value = parse_qs(parsed_url.query)['id'][0]

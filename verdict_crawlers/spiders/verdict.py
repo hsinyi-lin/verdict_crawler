@@ -56,68 +56,65 @@ class VerdictSpider(scrapy.Spider):
                 # 請求連結
                 request = scrapy.Request(
                     url=url, 
-                    callback=self.parse_paper
+                    callback=self.parse_verdict
                 )
                 request.meta['data'] = data
 
                 yield request
 
-    def parse_paper(self, response):
+    def parse_verdict(self, response):
         data = response.meta['data']
         d_soup = BeautifulSoup(response.text, 'lxml')
         
-        # 當跑大量資料因部分格式不一致而直接跳出換下一筆
-        try:
-            # 解析判決書格式
-            text_pre = d_soup.find('div', class_='col-td text-pre')
-            td = d_soup.find('table').find('tr').find('td')
-            htmlcontent = td.find('div', class_='htmlcontent')
+        # 解析判決書格式
+        text_pre = d_soup.find('div', class_='col-td text-pre')
+        td = d_soup.find('table').find('tr').find('td')
+        htmlcontent = td.find('div', class_='htmlcontent')
 
-            # 判決書標題
-            ver_title = htmlcontent.find('div')
-            data['ver_title'] = ver_title.getText(strip=True)
-            
+        # 判決書標題
+        ver_title = htmlcontent.find('div')
+        data['ver_title'] = ver_title.getText(strip=True)
+        
 
-            # 判決書編號+名稱
-            data['ver_no'] = ver_title.find_next_sibling('div').getText(strip=True)
+        # 判決書編號+名稱
+        data['ver_no'] = ver_title.find_next_sibling('div').getText(strip=True)
 
-            # 尋找並取得主文
-            contents = htmlcontent.find_all()
-            notEdit = htmlcontent.find_all('div', class_='notEdit')
-            
-            # if len(notEdit) < 2:
-            #     continue
+        # 尋找並取得主文
+        contents = htmlcontent.find_all()
+        notEdit = htmlcontent.find_all('div', class_='notEdit')
 
-            # 主文合併
-            txt = ''
-            for i in range(contents.index(notEdit[0])+1, contents.index(notEdit[1])):
-                txt += contents[i].text + '\n'
-            data['verdict'] = txt.strip()
-            # print(txt)
-            
+        # 主文合併
+        txt = ''
+        for i in range(contents.index(notEdit[0])+1, contents.index(notEdit[1])):
+            txt += contents[i].text + '\n'
+        data['verdict'] = txt.split('\n\xa0 \xa0 犯罪事實及理由')[0].strip()
 
-            # 取得犯罪事實標籤
-            incident = htmlcontent.find('div', text='　　　　犯罪事實')
+        incident = htmlcontent.find('div', text=re.compile('　　　　犯罪事實'))
+        investigate = htmlcontent.find('div', text=re.compile('偵辦'))
 
-            # 如果沒有犯罪事實就跳下一個判決書
-            # if isinstance(incident, type(None)):
-            #     continue
-            
-            # 取得犯罪事實第一段
-            data['incident'] = incident.find_next_sibling('div').text[2:].strip()
-        #     # 解析法條的ajax 連結以取得資料，取得id
-            parsed_url = urlparse(data['url'])
-            captured_value = parse_qs(parsed_url.query)['id'][0]
+        incident_idx = contents.index(incident)
+        investigate_idx = contents.index(investigate)
 
-            request = scrapy.Request(
-                        url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/controls/GetJudRelatedLaw.ashx?pkid={captured_value}',
-                        callback=self.parse_law
-                    )
-            request.meta['data'] = data
+        res = ''
+        for i in range(incident_idx+1, investigate_idx):
+            if i == incident_idx+1:
+                res += contents[i].text[2:].strip() + '\n'
+            else:
+                res += contents[i].text.strip() + '\n'
+        
+        data['incident'] = res.strip()
+        
+        # 解析法條的ajax 連結以取得資料，取得id
+        parsed_url = urlparse(data['url'])
+        captured_value = parse_qs(parsed_url.query)['id'][0]
 
-            yield request
-        except:
-            pass
+        request = scrapy.Request(
+                    url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/controls/GetJudRelatedLaw.ashx?pkid={captured_value}',
+                    callback=self.parse_law
+                )
+        request.meta['data'] = data
+
+        yield request
 
     def parse_law(self, response):
         data = response.meta['data']

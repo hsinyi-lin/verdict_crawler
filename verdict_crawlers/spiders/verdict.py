@@ -87,7 +87,7 @@ class VerdictSpider(scrapy.Spider):
         txt = ''
         for i in range(contents.index(notEdit[0])+1, contents.index(notEdit[1])):
             txt += contents[i].text + '\n'
-        data['verdict'] = txt.split('\n\xa0 \xa0 犯罪事實及理由')[0].strip()
+        data['verdict'] = txt.split('犯罪事實及理由')[0].strip()
 
         incident = htmlcontent.find('div', text=re.compile('　　　　犯罪事實'))
         investigate = htmlcontent.find('div', text=re.compile('偵辦'))

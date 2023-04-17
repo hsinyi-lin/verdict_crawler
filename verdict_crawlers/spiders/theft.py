@@ -6,8 +6,8 @@ from verdict_crawlers.items import VerdictItem
 from verdict_crawlers.utils.format import *
 import openai
 
-class VerdictSpider(scrapy.Spider):
-    name = 'verdict'
+class TheftSpider(scrapy.Spider):
+    name = 'theft'
     allowed_domains = ['judicial.gov.tw']
 
     def start_requests(self):
@@ -23,7 +23,7 @@ class VerdictSpider(scrapy.Spider):
         for area in tw_area:
             for year in range(109,112):
                 kw = f'{area}地方法院刑事簡易判決 {year}年度簡字第 竊盜罪'
-                for page in range(1,8):
+                for page in range(1,5):
                     request = scrapy.Request(
                         url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?kw={kw}&judtype=JUDBOOK&page={page}', 
                         callback=self.parse
@@ -93,9 +93,9 @@ class VerdictSpider(scrapy.Spider):
         txt = ''
         for i in range(contents.index(notEdit[0])+1, contents.index(notEdit[1])):
             txt += ''.join(contents[i].text.split()) + '\n'
-        result = re.split('犯罪事實及理由|一、本案犯罪事實及證據|犯罪事實與理由', txt)[0]
+        txt = re.split('犯罪事實及理由|一、本案犯罪事實及證據|犯罪事實與理由', txt)[0]
 
-        data['result'] = ''.join(result.split(' ')).strip()
+        data['result'] = ''.join(txt.split(' ')).strip()
 
         incident = htmlcontent.find('div', text=re.compile('　　　　犯罪事實'))
         investigate = htmlcontent.find('div', text=re.compile('偵辦'))
@@ -131,6 +131,18 @@ class VerdictSpider(scrapy.Spider):
         for item in response.json()['list']:
             laws.append(re.split(r'[(（]',item['desc'])[0])
         data['laws'] = ','.join(laws)
+
+        response = openai.Completion.create(
+            model="text-davinci-003",
+            prompt=f"產生45個字以內標題：{data['incident']}",
+            temperature=0,
+            max_tokens=60,
+            top_p=1,
+            frequency_penalty=0.5,
+            presence_penalty=0
+        )
+
+        data['title'] = response['choices'][0]['text'].strip()
 
         item = VerdictItem()
 

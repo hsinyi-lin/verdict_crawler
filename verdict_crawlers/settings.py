@@ -66,6 +66,14 @@ ITEM_PIPELINES = {
    "verdict_crawlers.pipelines.MySQLPipeline": 300,
 }
 
+MYSQL_SETTINGS = {
+    'host': 'database-1.c8ojbi459vfc.ap-northeast-3.rds.amazonaws.com',
+    'database': 'ntub',
+    'user': 'admin',
+    'password': 'ntub11136',
+}
+
+
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True

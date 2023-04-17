@@ -1,13 +1,24 @@
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+import mysql.connector
 
+class MySQLPipeline:
+    def __init__(self, mysql_settings):
+        self.mysql_settings = mysql_settings
 
-# useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
+    @classmethod
+    def from_crawler(cls, crawler):
+        mysql_settings = crawler.settings.get('MYSQL_SETTINGS')
+        return cls(mysql_settings)
 
+    def open_spider(self, spider):
+        self.connection = mysql.connector.connect(**self.mysql_settings)
+        self.cursor = self.connection.cursor()
 
-class VerdictCrawlersPipeline:
+    def close_spider(self, spider):
+        self.connection.commit()
+        self.connection.close()
+
     def process_item(self, item, spider):
+        query = f"INSERT INTO ver (title, sub_title, ver_title, judgement_date, crime_id, url, incident, result, laws) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        values = (item['title'], item['sub_title'], item['ver_title'],item['judgement_date'], item['crime_id'], item['url'],item['incident'], item['result'], item['laws'])
+        self.cursor.execute(query, values)
         return item

@@ -3,8 +3,8 @@ import re, json
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, parse_qs
 from verdict_crawlers.items import VerdictItem
-from verdict_crawlers.utils.format import *
-import openai
+from verdict_crawlers.utils import *
+
 
 class TheftSpider(scrapy.Spider):
     name = 'theft'
@@ -131,22 +131,20 @@ class TheftSpider(scrapy.Spider):
         for item in response.json()['list']:
             laws.append(re.split(r'[(（]',item['desc'])[0])
         data['laws'] = ','.join(laws)
+    
+        data['title'] = call_openai(data['incident'])
 
-        response = openai.Completion.create(
-            model="text-davinci-003",
-            prompt=f"產生45個字以內標題：{data['incident']}",
-            temperature=0,
-            max_tokens=60,
-            top_p=1,
-            frequency_penalty=0.5,
-            presence_penalty=0
-        )
-
-        data['title'] = response['choices'][0]['text'].strip()
-
+        data['title'] = data['title'].replace('45字以內','').replace('案件簡介：', '').replace('案：','')\
+                .replace('案件：', '').replace('標題：', '').replace('「', '').replace('」', '')\
+                .replace('【', '').replace('】','').replace('一、','').replace('二、','').replace('三、','')\
+                .replace('四、','').replace('五、', '').strip()
+        
+        if len(data['title']) == 0:
+            return
+        
         item = VerdictItem()
 
-        item['title'] = data['title'].replace('案情：', '').replace('案件：', '').replace('標題：', '').replace('「', '').replace('」', '').replace('【', '').replace('】','')
+        item['title'] = data['title']
         item['judgement_date'] = roc_to_ad(data['judgement_date'])
         item['year'] = data['year']
         item['crime_id'] = 1

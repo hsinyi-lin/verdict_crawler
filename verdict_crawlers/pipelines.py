@@ -18,7 +18,18 @@ class MySQLPipeline:
         self.connection.close()
 
     def process_item(self, item, spider):
-        query = f"INSERT INTO ver (title, sub_title, ver_title, judgement_date, crime_id, url, incident, result, laws) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        values = (item['title'], item['sub_title'], item['ver_title'],item['judgement_date'], item['crime_id'], item['url'],item['incident'], item['result'], item['laws'])
+
+        query = 'SELECT * FROM verdict sub_title=%s AND ver_title=%s'
+        values = (item['sub_title'], item['ver_title'])
         self.cursor.execute(query, values)
+        result = self.cursor.fetchone()
+
+        if result:
+            spider.logger.info('Data already exists in database.')
+        else:
+            insert_query = f'INSERT INTO verdict (title, sub_title, ver_title, judgement_date, crime_id, url, incident, result, laws) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'
+            values = (item['title'], item['sub_title'], item['ver_title'],item['judgement_date'], item['crime_id'], item['url'],item['incident'], item['result'], item['laws'])
+            self.cursor.execute(insert_query, values)
+            spider.logger.info('Data added to database.')
+        
         return item

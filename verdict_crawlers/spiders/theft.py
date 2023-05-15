@@ -25,7 +25,7 @@ class TheftSpider(scrapy.Spider):
                 kw = f'{area}地方法院刑事簡易判決 {year}年度簡字第 竊盜罪'
                 for page in range(1,5):
                     request = scrapy.Request(
-                        url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?kw={kw}&judtype=JUDBOOK&page={page}', 
+                        url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?sys=M&kw={kw}&judtype=JUDBOOK&page={page}', 
                         callback=self.parse
                     )
                     request.meta['year'] = year

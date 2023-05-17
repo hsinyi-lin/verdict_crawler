@@ -22,7 +22,8 @@ class TheftSpider(scrapy.Spider):
         # ]
 
         for year in range(107,112):
-            kw = f'交通工具致人於死罪 {year}年度'
+            kw = f'酒駕致死 {year}年度'
+            #  kw = f'交通工具致人於死罪 {year}年度'
             for page in range(1,26):
                 request = scrapy.Request(
                     url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?sys=M&kw={kw}&judtype=JUDBOOK&page={page}', 

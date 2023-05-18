@@ -18,20 +18,18 @@ class HomicideSpider(scrapy.Spider):
            '花蓮', '臺東', '屏東', '澎湖',
            '金門', '連江'
         ]
-        
         # 重訴、上訴、矚重訴
         # 高等、地方
         for area in tw_area:
-            for year in range(107,112):
-                kw = f'{area}地方法院 犯殺人罪， 訴字 {year}年度'
+            for year in range(106,112):
+                kw = f'{area}地方法院 犯殺人 訴 {year}年度'
                 for page in range(1,26):
                     request = scrapy.Request(
-                        url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?kw={kw}&judtype=JUDBOOK&page={page}', 
+                        url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?kw={kw}&judtype=JUDBOOK&sys=M&page={page}', 
                         callback=self.parse
                     )
                     request.meta['year'] = year
                     yield request
-
 
     def parse(self, response):
         soup = BeautifulSoup(response.text, 'lxml')
@@ -45,8 +43,8 @@ class HomicideSpider(scrapy.Spider):
                 data = dict()
 
                 title_list = re.split(r'[,\s]+',tr_tag.getText().strip())
-                # if '殺人' not in title_list[-1]:
-                #     continue
+                if '殺人' not in title_list[-1]:
+                    continue
 
                 # 標題、日期、年度、犯罪類型
                 data['title'] = tr_tag.find('a', id='hlTitle').getText(strip=True)
@@ -98,17 +96,16 @@ class HomicideSpider(scrapy.Spider):
         data['result'] = ''.join(txt.split(' ')).strip()
 
         #  or '撤銷' in data['result']
-        if '駁回' in data['result']:
-            return
-        if '殺人' not in data['result']:
+        if '期徒刑' not in data['result'] :
             return
 
+        # 犯罪過程
         incident = notEdit[1]
         investigate = htmlcontent.find('div', text=re.compile('起訴。'))
 
-        incident_idx = contents.index(notEdit[1])
+        incident_idx = contents.index(incident)
         investigate_idx = contents.index(investigate)
-
+            
         res = ''
         for i in range(incident_idx+1, investigate_idx):
             if i == incident_idx+1:
@@ -138,6 +135,7 @@ class HomicideSpider(scrapy.Spider):
             laws.append(re.split(r'[(（]',item['desc'])[0])
         data['laws'] = ','.join(laws)
 
+        # call_openai(data['incident'])
         data['title'] = call_openai(data['incident'])
 
         data['title'] = data['title'].replace('45字以內','').replace('案件簡介：', '').replace('案：','')\
@@ -153,6 +151,7 @@ class HomicideSpider(scrapy.Spider):
         item['title'] = data['title']
         item['judgement_date'] = roc_to_ad(data['judgement_date'])
         item['year'] = data['year']
+        # 編號
         item['crime_id'] = 2
         item['crime_name'] = data['crime_name']
         item['url'] = data['url']

@@ -72,7 +72,6 @@ class TheftSpider(scrapy.Spider):
         # 判決書名稱+編號
         ver_title_idx = clean_content.find('刑事判決')+4
         data['ver_title'] = clean_content[:ver_title_idx]
-
         data['sub_title'] = clean_content[ver_title_idx: clean_content.find('號')+1]
         
         # 取得主文的位置
@@ -98,9 +97,11 @@ class TheftSpider(scrapy.Spider):
 
         data['result'] = clean_content[main_title_idx: main_end_idx+1]
 
+        # 如果內容只有上訴駁回就跳過
         if data['result'] == '上訴駁回。':
             return
 
+        # 用位置的方式擷取犯罪過程內容
         data['incident'] = clean_content[incident_idx: clean_content.find('二、')]
         
         # 檢查是否有酒精跟死亡在事實中

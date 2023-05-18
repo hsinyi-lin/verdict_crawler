@@ -21,9 +21,9 @@ class TheftSpider(scrapy.Spider):
         #     '金門', '連江'
         # ]
 
-        for year in range(107,112):
-            kw = f'酒駕致死 {year}年度'
-            #  kw = f'交通工具致人於死罪 {year}年度'
+        for year in range(107,113):
+            # kw = f'酒駕致死 {year}年度'
+            kw = f'交通工具致人於死罪 {year}年度'
             for page in range(1,26):
                 request = scrapy.Request(
                     url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?sys=M&kw={kw}&judtype=JUDBOOK&page={page}', 
@@ -89,6 +89,14 @@ class TheftSpider(scrapy.Spider):
         contents = htmlcontent.find_all()
         notEdit = htmlcontent.find_all('div', class_='notEdit')
 
+        clean_main_title = ''.join(notEdit[0].text.split())
+        clean_incident_title = ''.join(notEdit[1].text.split())
+
+        if clean_main_title != '主文':
+            return
+        if clean_incident_title != '事實' and clean_incident_title != '犯罪事實':
+            return
+
         # 主文合併
         txt = ''
         for i in range(contents.index(notEdit[0])+1, contents.index(notEdit[1])):
@@ -96,6 +104,9 @@ class TheftSpider(scrapy.Spider):
         txt = re.split('犯罪事實及理由|一、本案犯罪事實及證據|犯罪事實與理由', txt)[0]
 
         data['result'] = ''.join(txt.split(' ')).strip()
+
+        if data['result'] == '上訴駁回。':
+            return
 
         # 取得主文標題跟犯罪經過標題
         incident = notEdit[1]
@@ -148,7 +159,7 @@ class TheftSpider(scrapy.Spider):
             laws.append(re.split(r'[(（]',item['desc'])[0])
         data['laws'] = ','.join(laws)
     
-        data['title'] = data['incident']
+        data['title'] = call_openai(data['incident'])
 
         data['title'] = data['title'].replace('45字以內','').replace('案件簡介：', '').replace('案：','')\
                 .replace('案件：', '').replace('標題：', '').replace('「', '').replace('」', '')\

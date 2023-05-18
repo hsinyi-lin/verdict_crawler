@@ -19,13 +19,13 @@ class RobberySpider(scrapy.Spider):
            '花蓮', '臺東', '屏東', '澎湖',
            '金門', '連江'
         ]
-        
+        # 台北地方法院 訴字 強盜罪
         for area in tw_area:
-            for year in range(109,112):
-                kw = f'{area}地方法院刑事簡易判決 {year}年度簡字第 竊盜罪'
-                for page in range(1,5):
+            for year in range(106,112):
+                kw = f'{area}地方法院 強盜罪 訴字 {year}年度'
+                for page in range(1,26):
                     request = scrapy.Request(
-                        url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?kw={kw}&judtype=JUDBOOK&page={page}', 
+                        url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?kw={kw}&judtype=JUDBOOK&sys=M&page={page}', 
                         callback=self.parse
                     )
                     request.meta['year'] = year
@@ -45,7 +45,7 @@ class RobberySpider(scrapy.Spider):
                 data = dict()
 
                 title_list = re.split(r'[,\s]+',tr_tag.getText().strip())
-                if title_list[-1] != '竊盜' or title_list[3] != '簡' or title_list[2] != str(response.meta['year']):
+                if '強盜' not in title_list[-1]:
                     continue
 
                 # 標題、日期、年度、犯罪類型
@@ -97,8 +97,11 @@ class RobberySpider(scrapy.Spider):
 
         data['result'] = ''.join(txt.split(' ')).strip()
 
-        incident = htmlcontent.find('div', text=re.compile('　　　　犯罪事實'))
-        investigate = htmlcontent.find('div', text=re.compile('偵辦'))
+        if '期徒刑' not in data['result'] :
+            return
+        
+        incident = notEdit[1]
+        investigate = htmlcontent.find('div', text=re.compile('起訴。'))
 
         incident_idx = contents.index(incident)
         investigate_idx = contents.index(investigate)
@@ -131,7 +134,8 @@ class RobberySpider(scrapy.Spider):
         for item in response.json()['list']:
             laws.append(re.split(r'[(（]',item['desc'])[0])
         data['laws'] = ','.join(laws)
-    
+
+        # call_openai(data['incident'])
         data['title'] = call_openai(data['incident'])
 
         data['title'] = data['title'].replace('45字以內','').replace('案件簡介：', '').replace('案：','')\

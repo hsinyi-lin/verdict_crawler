@@ -135,16 +135,7 @@ class HomicideSpider(scrapy.Spider):
             laws.append(re.split(r'[(（]',item['desc'])[0])
         data['laws'] = ','.join(laws)
 
-        # call_openai(data['incident'])
-        data['title'] = call_openai(data['incident'])
-
-        data['title'] = data['title'].replace('45字以內','').replace('案件簡介：', '').replace('案：','')\
-                .replace('案件：', '').replace('標題：', '').replace('「', '').replace('」', '')\
-                .replace('【', '').replace('】','').replace('一、','').replace('二、','').replace('三、','')\
-                .replace('四、','').replace('五、', '').strip()
-        
-        if len(data['title']) == 0:
-            return
+        data['title'] = data['incident']
 
         item = VerdictItem()
 

@@ -36,7 +36,7 @@ class TheftSpider(scrapy.Spider):
                 # print(tr_tag.text)
                 title_list = re.split(r'[,\s]+',tr_tag.getText().strip())
                 print(tr_tag)
-                if '酒駕致死' != title_list[-1] and '公共危險' != title_list[-1] and '過失致死' != title_list[-1] and '不安全駕駛致死' != title_list[-1]:
+                if '酒駕致死' not in title_list[-1] and '公共危險' not in title_list[-1] and '過失致死' not in title_list[-1] and '不安全駕駛致死' not in title_list[-1] and '肇事' not in title_list[-1]:
                     continue
 
                 # 標題、日期、年度、犯罪類型
@@ -128,15 +128,7 @@ class TheftSpider(scrapy.Spider):
             laws.append(re.split(r'[(（]',item['desc'])[0])
         data['laws'] = ','.join(laws)
     
-        data['title'] = call_openai(data['incident'])
-
-        data['title'] = data['title'].replace('45字以內','').replace('案件簡介：', '').replace('案：','')\
-                .replace('案件：', '').replace('標題：', '').replace('「', '').replace('」', '')\
-                .replace('【', '').replace('】','').replace('一、','').replace('二、','').replace('三、','')\
-                .replace('四、','').replace('五、', '').strip()
-        
-        if len(data['title']) == 0:
-            return
+        data['title'] = data['incident']
         
         item = VerdictItem()
 

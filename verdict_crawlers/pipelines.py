@@ -1,4 +1,6 @@
 import mysql.connector
+from verdict_crawlers.utils import *
+
 
 class MySQLPipeline:
     def __init__(self, mysql_settings):
@@ -28,6 +30,7 @@ class MySQLPipeline:
             spider.logger.info('Data already exists in database.')
         else:
             insert_query = f'INSERT INTO ver (title, sub_title, ver_title, judgement_date, crime_id, url, incident, result, laws) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'
+            item['title'] = call_openai(item['title'])
             values = (item['title'], item['sub_title'], item['ver_title'],item['judgement_date'], item['crime_id'], item['url'],item['incident'], item['result'], item['laws'])
             self.cursor.execute(insert_query, values)
             spider.logger.info('Data added to database.')

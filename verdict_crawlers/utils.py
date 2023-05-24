@@ -15,7 +15,7 @@ def call_openai(incident):
     completion = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     messages=[
-            {"role": "system", "content": "你是一個專門把內文產生適當的標題的助理."},
+            {"role": "system", "content": "你是一個專門把內文產生適當的10個字以內標題的助理."},
             {"role": "user", "content": incident}
         ]
     )

@@ -10,16 +10,14 @@ def roc_to_ad(roc_date_str):
 
 
 def call_openai(incident):
-    openai.api_key = ''
+    openai.api_key = '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'
 
-    response = openai.Completion.create(
-        model="text-davinci-003",
-        prompt=f"產生45個字以內標題：{incident}",
-        temperature=0,
-        max_tokens=60,
-        top_p=1,
-        frequency_penalty=0.5,
-        presence_penalty=0
+    completion = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    messages=[
+            {"role": "system", "content": "你是一個專門把內文產生適當的標題的助理."},
+            {"role": "user", "content": incident}
+        ]
     )
 
-    return response['choices'][0]['text'].strip()
+    return completion['choices'][0]['message']['content'].strip()

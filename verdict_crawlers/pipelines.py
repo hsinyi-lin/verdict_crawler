@@ -1,4 +1,6 @@
 import mysql.connector
+from verdict_crawlers.utils import *
+
 
 class MySQLPipeline:
     def __init__(self, mysql_settings):

@@ -23,7 +23,7 @@ class TheftSpider(scrapy.Spider):
 
         for year in range(107,113):
             # kw = f'酒駕致死 {year}年度'
-            kw = f'交通工具致人於死罪 {year}年度'
+            kw = f'不能安全駕駛動力交通工具 酒精 死亡 {year}年度交訴'
             for page in range(1,26):
                 request = scrapy.Request(
                     url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?sys=M&kw={kw}&judtype=JUDBOOK&page={page}', 
@@ -45,7 +45,7 @@ class TheftSpider(scrapy.Spider):
                 data = dict()
                 # print(tr_tag.text)
                 title_list = re.split(r'[,\s]+',tr_tag.getText().strip())
-                if '酒駕致死' != title_list[-1] and '公共危險' != title_list[-1] and '過失致死' != title_list[-1] and '不安全駕駛致死' != title_list[-1]:
+                if '酒駕致死' not in title_list[-1] and '公共危險' not in title_list[-1] and '過失致死' not in title_list[-1] and '不安全駕駛致死' not in title_list[-1] and '肇事' not in title_list[-1]:
                     continue
 
                 # 標題、日期、年度、犯罪類型

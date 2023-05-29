@@ -36,7 +36,7 @@ class TheftSpider(scrapy.Spider):
                 # print(tr_tag.text)
                 title_list = re.split(r'[,\s]+',tr_tag.getText().strip())
                 print(tr_tag)
-                if '酒駕致死' != title_list[-1] and '公共危險' != title_list[-1] and '過失致死' != title_list[-1] and '不安全駕駛致死' != title_list[-1]:
+                if '酒駕致死' not in title_list[-1] and '公共危險' not in title_list[-1] and '過失致死' not in title_list[-1] and '不安全駕駛致死' not in title_list[-1] and '肇事' not in title_list[-1]:
                     continue
 
                 # 標題、日期、年度、犯罪類型

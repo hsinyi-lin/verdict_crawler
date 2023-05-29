@@ -27,8 +27,8 @@ class MySQLPipeline:
         if result:
             spider.logger.info('Data already exists in database.')
         else:
-            insert_query = f'INSERT INTO ver (title, sub_title, ver_title, judgement_date, crime_id, url, incident, result, laws) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'
-            values = (item['title'], item['sub_title'], item['ver_title'],item['judgement_date'], item['crime_id'], item['url'],item['incident'], item['result'], item['laws'])
+            insert_query = f'INSERT INTO ver (title, sub_title, ver_title, judgement_date, crime_id, url, incident, incident_lite, result, laws) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+            values = (item['title'], item['sub_title'], item['ver_title'],item['judgement_date'], item['crime_id'], item['url'],item['incident'], item['incident_lite'], item['result'], item['laws'])
             self.cursor.execute(insert_query, values)
             spider.logger.info('Data added to database.')
         

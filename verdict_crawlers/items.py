@@ -17,4 +17,5 @@ class VerdictItem(scrapy.Item):
     sub_title = scrapy.Field()
     result = scrapy.Field()
     incident = scrapy.Field()
+    incident_lite = scrapy.Field()
     laws = scrapy.Field()

@@ -159,15 +159,17 @@ class TheftSpider(scrapy.Spider):
             laws.append(re.split(r'[(（]',item['desc'])[0])
         data['laws'] = ','.join(laws)
     
-        data['title'] = call_openai(data['incident'])
+        data['title'] = call_openai_title(data['incident'])
+        data['incident_lite'] = call_openai_incident_lite(data['incident'])
 
-        data['title'] = data['title'].replace('45字以內','').replace('案件簡介：', '').replace('案：','')\
-                .replace('案件：', '').replace('標題：', '').replace('「', '').replace('」', '')\
-                .replace('【', '').replace('】','').replace('一、','').replace('二、','').replace('三、','')\
-                .replace('四、','').replace('五、', '').strip()
+
+        # data['title'] = data['title'].replace('45字以內','').replace('案件簡介：', '').replace('案：','')\
+        #         .replace('案件：', '').replace('標題：', '').replace('「', '').replace('」', '')\
+        #         .replace('【', '').replace('】','').replace('一、','').replace('二、','').replace('三、','')\
+        #         .replace('四、','').replace('五、', '').strip()
         
-        if len(data['title']) == 0:
-            return
+        # if len(data['title']) == 0:
+        #     return
         
         item = VerdictItem()
 
@@ -181,6 +183,7 @@ class TheftSpider(scrapy.Spider):
         item['sub_title'] =data['sub_title']
         item['result'] = data['result']
         item['incident'] = data['incident']
+        item['incident_lite'] = data['incident_lite']
         item['laws'] = data['laws']
 
         yield item

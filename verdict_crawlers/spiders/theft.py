@@ -1,9 +1,10 @@
 import scrapy
-import re, json, time
+import re, json, time, datetime
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, parse_qs
 from verdict_crawlers.items import TheftItem
 from verdict_crawlers.utils import *
+
 
 
 class TheftSpider(scrapy.Spider):
@@ -20,8 +21,13 @@ class TheftSpider(scrapy.Spider):
            '金門', '連江'
         ]
         
+        currentDateTime = datetime.datetime.now()
+        date = currentDateTime.date()
+
+        current_roc_year = date.year - 1911
+
         for area in tw_area:
-            kw = f''
+            kw = f'{area}地方法院刑事簡易判決 {current_roc_year}年度簡字第 竊盜罪'
             for page in range(1,5):
                 request = scrapy.Request(
                     url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?sys=M&kw={kw}&judtype=JUDBOOK&page={page}', 

@@ -1,5 +1,5 @@
 from datetime import date
-import openai
+import openai, time
 
 openai.api_key = ''
 
@@ -20,6 +20,8 @@ def call_openai_title(incident):
             {"role": "user", "content": incident}
         ]
     )
+
+    time.sleep(25)
     return completion['choices'][0]['message']['content'].strip()
 
 
@@ -31,6 +33,7 @@ def call_openai_incident_lite(incident):
             {"role": "user", "content": incident}
         ]
     )
+    time.sleep(25)
     return completion['choices'][0]['message']['content'].strip()
 
 
@@ -46,6 +49,11 @@ def call_openai_find_features(incident):
         ]
     )
 
+    # 竊盜
+    # item['is_money_related'], item['is_abandoned'], item['is_indoor'], item['is_destructive'], \
+    #     item['is_group_crime'], item['is_transportation_used'], item['has_criminal_record'], \
+    #         item['is_income_tool'] = data['features']
+
     response_message = completion['choices'][0]['message']['content'].strip()
     clean_list = response_message.split('、')
 
@@ -60,6 +68,7 @@ def call_openai_find_features(incident):
         else:
             clean.append(True)
 
+    time.sleep(25)
     print(clean)
     return clean
 
@@ -84,8 +93,8 @@ def call_openai_prison_term(result):
     try:
         month = int(response_message)
     except:
-        print(False)
         return False
     
+    time.sleep(25)
     print(month)
     return month

@@ -21,13 +21,13 @@ class VerdictItem(scrapy.Item):
     laws = scrapy.Field()
 
 
-class TheftItem(VerdictItem):
-    is_money_related = scrapy.Field()
-    is_abandoned = scrapy.Field()
-    is_indoor = scrapy.Field()
-    is_destructive = scrapy.Field()
-    is_group_crime = scrapy.Field()
-    is_transportation_used = scrapy.Field()
-    has_criminal_record = scrapy.Field()
-    is_income_tool = scrapy.Field()
-    month = scrapy.Field()
+# class TheftItem(VerdictItem):
+#     is_money_related = scrapy.Field()
+#     is_abandoned = scrapy.Field()
+#     is_indoor = scrapy.Field()
+#     is_destructive = scrapy.Field()
+#     is_group_crime = scrapy.Field()
+#     is_transportation_used = scrapy.Field()
+#     has_criminal_record = scrapy.Field()
+#     is_income_tool = scrapy.Field()
+#     month = scrapy.Field()

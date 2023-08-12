@@ -2,7 +2,7 @@ import scrapy
 import re, json, time, datetime
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, parse_qs
-from verdict_crawlers.items import TheftItem
+from verdict_crawlers.items import VerdictItem
 from verdict_crawlers.utils import *
 
 
@@ -28,7 +28,8 @@ class TheftSpider(scrapy.Spider):
 
         for area in tw_area:
             kw = f'{area}地方法院刑事簡易判決 {current_roc_year}年度簡字第 竊盜罪'
-            for page in range(1,5):
+            # kw = f'王成忠犯竊盜未遂罪，累犯，處有期徒刑貳月，如易科罰金，以新臺幣壹仟元折算壹日。'
+            for page in range(1,6):
                 request = scrapy.Request(
                     url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?sys=M&kw={kw}&judtype=JUDBOOK&page={page}', 
                     callback=self.parse
@@ -39,8 +40,10 @@ class TheftSpider(scrapy.Spider):
 
     def parse(self, response):
         soup = BeautifulSoup(response.text, 'lxml')
-        tab_pane = soup.find('div', class_='container-fluid').find('div', class_='tab-pane active')
-        table = tab_pane.find('table', class_='table int-table')
+        tab_pane = soup.find('div', class_='container-fluid')
+        print(tab_pane)
+        print('---------------------------------')
+        table = tab_pane.find('div', class_='tab-pane active').find('table', class_='table int-table')
         tr_tags = tab_pane.find_all('tr')
 
         # print(tr_tags)
@@ -120,55 +123,12 @@ class TheftSpider(scrapy.Spider):
         
         data['incident'] = ''.join(res.split(' ')).strip()
         print(data['incident'])
-
-        # 解析法條的ajax 連結以取得資料，取得id
-        # parsed_url = urlparse(data['url'])
-        # captured_value = parse_qs(parsed_url.query)['id'][0]
-
-        # request = scrapy.Request(
-        #             url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/controls/GetJudRelatedLaw.ashx?pkid={captured_value}',
-        #             callback=self.parse_law
-        #         )
-        # request.meta['data'] = data
-
-        # yield request
-
-        # data = response.meta['data']
-        # print(data)
-
-        # 儲存法條
-        # laws = []
-        # for item in response.json()['list']:
-        #     print(data)
-        #     laws.append(re.split(r'[(（]',item['desc'])[0])
-        # data['laws'] = ','.join(laws)
-        # print(data)
-
-        # print(data['laws'])
-
-
-        data['laws'] = None
-        # 使用 OpenAI API
-        data['features'] = call_openai_find_features(data['incident'])
-        time.sleep(30)
-
-        data['prison_term'] = call_openai_prison_term(data['result'])
-        time.sleep(30)
-
-        if data['features'] == False or data['prison_term'] == False:
-            return
-
-        data['title'] = call_openai_title(data['incident'])
-        time.sleep(30)
-
-        data['incident_lite'] = call_openai_incident_lite(data['incident'])
-        time.sleep(30)
         
-        # 將資料移入Scrapy Item
+        # -------- 將資料移入Scrapy Item --------
     
-        item = TheftItem()
+        item = VerdictItem()
 
-        item['title'] = data['title']
+        # item['title'] = data['title']
         item['judgement_date'] = roc_to_ad(data['judgement_date'])
         item['year'] = data['year']
         item['crime_id'] = 1
@@ -178,13 +138,11 @@ class TheftSpider(scrapy.Spider):
         item['sub_title'] =data['sub_title']
         item['result'] = data['result']
         item['incident'] = data['incident']
-        item['incident_lite'] = data['incident_lite']
-        item['laws'] = data['laws']
+        item['laws'] = None
+        # item['incident_lite'] = data['incident_lite']
+        # item['laws'] = data['laws']
+        
 
-        item['is_money_related'], item['is_abandoned'], item['is_indoor'], item['is_destructive'], \
-            item['is_group_crime'], item['is_transportation_used'], item['has_criminal_record'], \
-                item['is_income_tool'] = data['features']
-
-        item['month'] = data['prison_term']
+        # item['month'] = data['prison_term']
 
         yield item

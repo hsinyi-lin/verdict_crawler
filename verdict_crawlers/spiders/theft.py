@@ -12,13 +12,17 @@ class TheftSpider(scrapy.Spider):
     allowed_domains = ['judicial.gov.tw']
 
     def start_requests(self):
+        # tw_area = [
+        #    '臺北', '士林', '新北', '宜蘭', 
+        #    '基隆', '桃園',  '新竹', '苗栗', 
+        #    '臺中', '彰化', '南投', '雲林',
+        #    '嘉義', '台南', '高雄', '橋頭',
+        #    '花蓮', '臺東', '屏東', '澎湖',
+        #    '金門', '連江'
+        # ]
+
         tw_area = [
-           '臺北', '士林', '新北', '宜蘭', 
-           '基隆', '桃園',  '新竹', '苗栗', 
-           '臺中', '彰化', '南投', '雲林',
-           '嘉義', '台南', '高雄', '橋頭',
-           '花蓮', '臺東', '屏東', '澎湖',
-           '金門', '連江'
+           '士林', '新北',
         ]
         
         currentDateTime = datetime.datetime.now()
@@ -29,7 +33,7 @@ class TheftSpider(scrapy.Spider):
         for area in tw_area:
             kw = f'{area}地方法院刑事簡易判決 {current_roc_year}年度簡字第 竊盜罪'
             # kw = f'王成忠犯竊盜未遂罪，累犯，處有期徒刑貳月，如易科罰金，以新臺幣壹仟元折算壹日。'
-            for page in range(1,6):
+            for page in range(1,2):
                 request = scrapy.Request(
                     url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?sys=M&kw={kw}&judtype=JUDBOOK&page={page}', 
                     callback=self.parse

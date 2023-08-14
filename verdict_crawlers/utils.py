@@ -1,7 +1,7 @@
 from datetime import date
 import openai, time
 
-openai.api_key = ''
+openai.api_key = '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'
 
 
 def roc_to_ad(roc_date_str):
@@ -21,7 +21,7 @@ def call_openai_title(incident):
         ]
     )
 
-    time.sleep(25)
+    # time.sleep(25)
     return completion['choices'][0]['message']['content'].strip()
 
 
@@ -33,7 +33,7 @@ def call_openai_incident_lite(incident):
             {"role": "user", "content": incident}
         ]
     )
-    time.sleep(25)
+
     return completion['choices'][0]['message']['content'].strip()
 
 
@@ -57,6 +57,7 @@ def call_openai_find_features(incident):
     response_message = completion['choices'][0]['message']['content'].strip()
     clean_list = response_message.split('、')
 
+
     if len(clean_list) != 8:
         print(False)
         return False
@@ -68,7 +69,6 @@ def call_openai_find_features(incident):
         else:
             clean.append(True)
 
-    time.sleep(25)
     print(clean)
     return clean
 
@@ -95,6 +95,4 @@ def call_openai_prison_term(result):
     except:
         return False
     
-    time.sleep(25)
-    print(month)
     return month

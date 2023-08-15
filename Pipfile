@@ -9,6 +9,7 @@ bs4 = "*"
 mysql-connector-python = "*"
 openai = "*"
 scrapeops-scrapy = "*"
+opencc-python-reimplemented = "*"
 
 [dev-packages]
 

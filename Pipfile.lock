@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "02213a4a7dfe22b5dfae9ea8b913c12397d0a84670be15722b6a905672a5d1c3"
+            "sha256": "1dcf945bcf546f9324b35b1accc5336346948830660780c27203a5dcfa594009"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -706,6 +706,14 @@
             ],
             "index": "pypi",
             "version": "==0.27.8"
+        },
+        "opencc-python-reimplemented": {
+            "hashes": [
+                "sha256:41b3b92943c7bed291f448e9c7fad4b577c8c2eae30fcfe5a74edf8818493aa6",
+                "sha256:4f777ea3461a25257a7b876112cfa90bb6acabc6dfb843bf4d11266e43579dee"
+            ],
+            "index": "pypi",
+            "version": "==0.1.7"
         },
         "packaging": {
             "hashes": [

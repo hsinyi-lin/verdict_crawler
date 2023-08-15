@@ -1,5 +1,5 @@
 from datetime import date
-import openai, time
+import openai, time, datetime
 
 openai.api_key = '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'
 
@@ -9,6 +9,15 @@ def roc_to_ad(roc_date_str):
     ad_year = roc_year + 1911
     ad_date = date(ad_year, roc_month, roc_day)
     return ad_date
+
+
+def current_roc_year():
+    currentDateTime = datetime.datetime.now()
+    date = currentDateTime.date()
+
+    current_year = date.year - 1911
+
+    return current_year
 
 
 

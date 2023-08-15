@@ -12,17 +12,13 @@ class TheftSpider(scrapy.Spider):
     allowed_domains = ['judicial.gov.tw']
 
     def start_requests(self):
-        # tw_area = [
-        #    '臺北', '士林', '新北', '宜蘭', 
-        #    '基隆', '桃園',  '新竹', '苗栗', 
-        #    '臺中', '彰化', '南投', '雲林',
-        #    '嘉義', '台南', '高雄', '橋頭',
-        #    '花蓮', '臺東', '屏東', '澎湖',
-        #    '金門', '連江'
-        # ]
-
         tw_area = [
-           '士林', '新北',
+           '臺北', '士林', '新北', '宜蘭', 
+           '基隆', '桃園',  '新竹', '苗栗', 
+           '臺中', '彰化', '南投', '雲林',
+           '嘉義', '台南', '高雄', '橋頭',
+           '花蓮', '臺東', '屏東', '澎湖',
+           '金門', '連江'
         ]
         
         currentDateTime = datetime.datetime.now()
@@ -33,7 +29,7 @@ class TheftSpider(scrapy.Spider):
         for area in tw_area:
             kw = f'{area}地方法院刑事簡易判決 {current_roc_year}年度簡字第 竊盜罪'
             # kw = f'王成忠犯竊盜未遂罪，累犯，處有期徒刑貳月，如易科罰金，以新臺幣壹仟元折算壹日。'
-            for page in range(1,2):
+            for page in range(1,3):
                 request = scrapy.Request(
                     url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?sys=M&kw={kw}&judtype=JUDBOOK&page={page}', 
                     callback=self.parse
@@ -127,7 +123,33 @@ class TheftSpider(scrapy.Spider):
         
         data['incident'] = ''.join(res.split(' ')).strip()
         print(data['incident'])
+
+        # 解析法條的ajax 連結以取得資料，取得id
+        parsed_url = urlparse(data['url'])
+        captured_value = parse_qs(parsed_url.query)['id'][0]
+
+        request = scrapy.Request(
+                    url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/controls/GetJudRelatedLaw.ashx?pkid={captured_value}',
+                    callback=self.parse_law
+                )
         
+        request.meta['data'] = data
+        yield request
+
+    def parse_law(self, response):
+        data = response.meta['data']
+
+        # 2023.08、部分判例沒有相關法條
+        laws_result = None
+
+        try:
+            laws = []
+            for item in response.json()['list']:
+                laws.append(re.split(r'[(（]',item['desc'])[0])
+            laws_result = ','.join(laws)
+        except:
+            laws_result = None
+
         # -------- 將資料移入Scrapy Item --------
     
         item = VerdictItem()
@@ -142,11 +164,8 @@ class TheftSpider(scrapy.Spider):
         item['sub_title'] =data['sub_title']
         item['result'] = data['result']
         item['incident'] = data['incident']
-        item['laws'] = None
-        # item['incident_lite'] = data['incident_lite']
-        # item['laws'] = data['laws']
-        
+        item['laws'] = laws_result
 
-        # item['month'] = data['prison_term']
+        print(item)
 
         yield item

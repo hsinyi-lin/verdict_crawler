@@ -8,6 +8,7 @@ scrapy = "*"
 bs4 = "*"
 mysql-connector-python = "*"
 openai = "*"
+scrapeops-scrapy = "*"
 
 [dev-packages]
 

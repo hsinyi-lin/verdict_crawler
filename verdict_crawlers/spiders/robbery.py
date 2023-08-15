@@ -12,25 +12,25 @@ class RobberySpider(scrapy.Spider):
 
     def start_requests(self):
         tw_area = [
-           '臺北', '士林', '新北', '宜蘭', 
-           '基隆', '桃園',  '新竹', '苗栗', 
-           '臺中', '彰化', '南投', '雲林',
-           '嘉義', '台南', '高雄', '橋頭',
-           '花蓮', '臺東', '屏東', '澎湖',
-           '金門', '連江'
+            '臺北', '士林', '新北', '宜蘭', 
+            '基隆', '桃園',  '新竹', '苗栗', 
+            '臺中', '彰化', '南投', '雲林',
+            '嘉義', '台南', '高雄', '橋頭',
+            '花蓮', '臺東', '屏東', '澎湖',
+            '金門', '連江'
         ]
+
         # 台北地方法院 訴字 強盜罪
         for area in tw_area:
-            for year in range(106,112):
-                kw = f'{area}地方法院 強盜罪 訴字 {year}年度'
-                for page in range(1,26):
-                    request = scrapy.Request(
-                        url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?kw={kw}&judtype=JUDBOOK&sys=M&page={page}', 
-                        callback=self.parse
-                    )
-                    request.meta['year'] = year
+            kw = f'{area}地方法院 強盜罪 訴字 {current_roc_year()}年度 有期徒刑'
+            # kw = f'甲○○犯竊盜罪，處拘役拾日，如易科罰金，以新臺幣壹仟元折算壹日。又犯攜帶兇器強盜未遂罪，處有期徒刑貳年。'
+            for page in range(1,3):
+                request = scrapy.Request(
+                    url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?kw={kw}&judtype=JUDBOOK&sys=M&page={page}', 
+                    callback=self.parse
+                )
 
-                    yield request
+                yield request
 
 
     def parse(self, response):
@@ -97,8 +97,8 @@ class RobberySpider(scrapy.Spider):
 
         data['result'] = ''.join(txt.split(' ')).strip()
 
-        if '期徒刑' not in data['result'] :
-            return
+        if '有期徒刑' not in data['result']:
+            raise Exception('No prison term record')
         
         incident = notEdit[1]
         investigate = htmlcontent.find('div', text=re.compile('起訴。'))
@@ -129,26 +129,23 @@ class RobberySpider(scrapy.Spider):
 
     def parse_law(self, response):
         data = response.meta['data']
-        # 儲存法條
-        laws = []
-        for item in response.json()['list']:
-            laws.append(re.split(r'[(（]',item['desc'])[0])
-        data['laws'] = ','.join(laws)
+
+        # 2023.08、部分判例沒有相關法條
+        laws_result = None
+
+        try:
+            laws = []
+            for item in response.json()['list']:
+                laws.append(re.split(r'[(（]',item['desc'])[0])
+            laws_result = ','.join(laws)
+        except:
+            laws_result = None
+
+        # -------- 將資料移入Scrapy Item --------
     
-        data['title'] = call_openai_title(data['incident'])
-        data['incident_lite'] = call_openai_incident_lite(data['incident'])
-
-        # data['title'] = data['title'].replace('45字以內','').replace('案件簡介：', '').replace('案：','')\
-        #         .replace('案件：', '').replace('標題：', '').replace('「', '').replace('」', '')\
-        #         .replace('【', '').replace('】','').replace('一、','').replace('二、','').replace('三、','')\
-        #         .replace('四、','').replace('五、', '').strip()
-        
-        # if len(data['title']) == 0:
-        #     return
-
         item = VerdictItem()
 
-        item['title'] = data['title']
+        # item['title'] = data['title']
         item['judgement_date'] = roc_to_ad(data['judgement_date'])
         item['year'] = data['year']
         item['crime_id'] = 3
@@ -158,7 +155,6 @@ class RobberySpider(scrapy.Spider):
         item['sub_title'] =data['sub_title']
         item['result'] = data['result']
         item['incident'] = data['incident']
-        item['incident_lite'] = data['incident_lite']
-        item['laws'] = data['laws']
+        item['laws'] = laws_result
 
         yield item

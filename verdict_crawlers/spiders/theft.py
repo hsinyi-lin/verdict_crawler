@@ -1,10 +1,9 @@
 import scrapy
-import re, json, time, datetime
+import re
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, parse_qs
 from verdict_crawlers.items import VerdictItem
 from verdict_crawlers.utils import *
-
 
 
 class TheftSpider(scrapy.Spider):
@@ -13,22 +12,17 @@ class TheftSpider(scrapy.Spider):
 
     def start_requests(self):
         tw_area = [
-           '臺北', '士林', '新北', '宜蘭', 
-           '基隆', '桃園',  '新竹', '苗栗', 
-           '臺中', '彰化', '南投', '雲林',
-           '嘉義', '台南', '高雄', '橋頭',
-           '花蓮', '臺東', '屏東', '澎湖',
-           '金門', '連江'
+            '臺北', '士林', '新北', '宜蘭', 
+            '基隆', '桃園',  '新竹', '苗栗', 
+            '臺中', '彰化', '南投', '雲林',
+            '嘉義', '台南', '高雄', '橋頭',
+            '花蓮', '臺東', '屏東', '澎湖',
+            '金門', '連江'
         ]
-        
-        currentDateTime = datetime.datetime.now()
-        date = currentDateTime.date()
-
-        current_roc_year = date.year - 1911
 
         for area in tw_area:
-            kw = f'{area}地方法院刑事簡易判決 {current_roc_year}年度簡字第 竊盜罪'
-            # kw = f'王成忠犯竊盜未遂罪，累犯，處有期徒刑貳月，如易科罰金，以新臺幣壹仟元折算壹日。'
+            kw = f'{area}地方法院刑事簡易判決 {current_roc_year()}年度簡字第 竊盜罪 有期徒刑'
+            # kw = f'彭家榮竊盜，處有期徒刑貳月，如易科罰金，以新臺幣壹仟元折算壹日。'
             for page in range(1,3):
                 request = scrapy.Request(
                     url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?sys=M&kw={kw}&judtype=JUDBOOK&page={page}', 
@@ -108,6 +102,9 @@ class TheftSpider(scrapy.Spider):
 
         data['result'] = ''.join(txt.split(' ')).strip()
 
+        if '有期徒刑' not in data['result']:
+            raise Exception('No prison term record')
+
         incident = htmlcontent.find('div', text=re.compile('　　　　犯罪事實'))
         investigate = htmlcontent.find('div', text=re.compile('偵辦'))
 
@@ -166,6 +163,5 @@ class TheftSpider(scrapy.Spider):
         item['incident'] = data['incident']
         item['laws'] = laws_result
 
-        print(item)
-
+        # print(item)
         yield item

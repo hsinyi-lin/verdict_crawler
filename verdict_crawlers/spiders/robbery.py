@@ -24,7 +24,7 @@ class RobberySpider(scrapy.Spider):
         for area in tw_area:
             kw = f'{area}地方法院 強盜罪 訴字 {current_roc_year()}年度 有期徒刑'
             # kw = f'甲○○犯竊盜罪，處拘役拾日，如易科罰金，以新臺幣壹仟元折算壹日。又犯攜帶兇器強盜未遂罪，處有期徒刑貳年。'
-            for page in range(1,3):
+            for page in range(1,2):
                 request = scrapy.Request(
                     url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?kw={kw}&judtype=JUDBOOK&sys=M&page={page}', 
                     callback=self.parse

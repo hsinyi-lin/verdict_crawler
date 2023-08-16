@@ -3,7 +3,10 @@ import openai, time, datetime
 from opencc import OpenCC
 
 
-openai.api_key = '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'
+with open('openai_key.txt', 'r') as file:
+    api_key = file.read().strip()
+
+openai.api_key = api_key
 
 
 def to_traditional_text(text):

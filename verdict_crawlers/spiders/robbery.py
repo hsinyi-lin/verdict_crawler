@@ -114,7 +114,10 @@ class RobberySpider(scrapy.Spider):
                 res += ''.join(contents[i].text.strip()) + '\n'
         
         data['incident'] = ''.join(res.split(' ')).strip()
+        # print(data['incident'])
         
+        data['incident'], data['result'] = handling_newline(data['incident'], data['result'])
+
         # 解析法條的ajax 連結以取得資料，取得id
         parsed_url = urlparse(data['url'])
         captured_value = parse_qs(parsed_url.query)['id'][0]

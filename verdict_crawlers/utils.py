@@ -32,6 +32,33 @@ def current_roc_year():
     return current_year
 
 
+def handling_newline(incident, result):
+    # 處理換行問題(犯罪過程)
+    tmp_incident = ''.join(incident.split())
+    incident_list = tmp_incident.split('。')
+    res = '。\n'.join(incident_list).strip()
+
+    tmp_incident_list = res.split('：(')
+    clean_incident = '：\n('.join(tmp_incident_list).strip()
+
+    tmp_incident_list = clean_incident.split('：（')
+    clean_incident = '：\n（'.join(tmp_incident_list).strip()
+
+    # 處理換行問題(判決結果)
+    tmp_result = ''.join(result.split())
+    result_list = tmp_result.split('。')
+    res = '。\n'.join(result_list).strip()
+
+    tmp_result_list = res.split('：(')
+    clean_result = '：\n('.join(tmp_result_list).strip()
+
+    tmp_result_list = clean_result.split('：（')
+    clean_result = '：\n（'.join(tmp_result_list).strip()
+
+    return clean_incident, clean_result
+
+
+
 
 def call_openai_title(incident):
     completion = openai.ChatCompletion.create(

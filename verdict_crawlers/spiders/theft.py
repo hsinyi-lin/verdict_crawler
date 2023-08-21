@@ -22,7 +22,7 @@ class TheftSpider(scrapy.Spider):
 
         for area in tw_area:
             kw = f'{area}地方法院刑事簡易判決 {current_roc_year()}年度簡字第 竊盜罪 有期徒刑'
-            # kw = f'彭家榮竊盜，處有期徒刑貳月，如易科罰金，以新臺幣壹仟元折算壹日。'
+            # kw = f'蘇宜靜犯竊盜罪，處拘役肆拾日，如易科罰金，以新臺幣壹仟元折算壹日。'
             for page in range(1,2):
                 request = scrapy.Request(
                     url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?sys=M&kw={kw}&judtype=JUDBOOK&page={page}', 
@@ -119,7 +119,9 @@ class TheftSpider(scrapy.Spider):
                 res += ''.join(contents[i].text.strip()) + '\n'
         
         data['incident'] = ''.join(res.split(' ')).strip()
-        print(data['incident'])
+        # print(data['incident'])
+
+        data['incident'], data['result'] = handling_newline(data['incident'], data['result'])
 
         # 解析法條的ajax 連結以取得資料，取得id
         parsed_url = urlparse(data['url'])

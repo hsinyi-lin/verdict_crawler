@@ -21,16 +21,18 @@ class TheftSpider(scrapy.Spider):
         #     '金門', '連江'
         # ]
 
-        for year in range(107,113):
-            # kw = f'酒駕致死 {year}年度'
-            kw = f'不能安全駕駛動力交通工具 酒精 死亡 {year}年度交訴'
-            for page in range(1,26):
-                request = scrapy.Request(
-                    url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?sys=M&kw={kw}&judtype=JUDBOOK&page={page}', 
-                    callback=self.parse
-                )
-                request.meta['year'] = year
-                yield request
+
+        # kw = f'酒駕致死 {year}年度'
+        # kw = f'杜宥賢犯不能安全駕駛動力交通工具因而致人於死罪，處有期徒刑肆年陸月。'
+        kw = f'不能安全駕駛動力交通工具 酒精 死亡'
+        # kw = f'不能安全駕駛動力交通工具 酒精 死亡 {current_roc_year()}年度交訴'
+        for page in range(1,5):
+            request = scrapy.Request(
+
+                url=f'https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/qryresult.aspx?sys=M&kw={kw}&judtype=JUDBOOK&page={page}', 
+                callback=self.parse
+            )
+            yield request
 
 
     def parse(self, response):
@@ -153,27 +155,23 @@ class TheftSpider(scrapy.Spider):
 
     def parse_law(self, response):
         data = response.meta['data']
-        # 儲存法條
-        laws = []
-        for item in response.json()['list']:
-            laws.append(re.split(r'[(（]',item['desc'])[0])
-        data['laws'] = ','.join(laws)
+
+        # 2023.08、部分判例沒有相關法條
+        laws_result = None
+
+        try:
+            laws = []
+            for item in response.json()['list']:
+                laws.append(re.split(r'[(（]',item['desc'])[0])
+            laws_result = ','.join(laws)
+        except:
+            laws_result = None
+
+        # -------- 將資料移入Scrapy Item --------
     
-        data['title'] = call_openai_title(data['incident'])
-        data['incident_lite'] = call_openai_incident_lite(data['incident'])
-
-
-        # data['title'] = data['title'].replace('45字以內','').replace('案件簡介：', '').replace('案：','')\
-        #         .replace('案件：', '').replace('標題：', '').replace('「', '').replace('」', '')\
-        #         .replace('【', '').replace('】','').replace('一、','').replace('二、','').replace('三、','')\
-        #         .replace('四、','').replace('五、', '').strip()
-        
-        # if len(data['title']) == 0:
-        #     return
-        
         item = VerdictItem()
 
-        item['title'] = data['title']
+        # item['title'] = data['title']
         item['judgement_date'] = roc_to_ad(data['judgement_date'])
         item['year'] = data['year']
         item['crime_id'] = 4
@@ -183,7 +181,7 @@ class TheftSpider(scrapy.Spider):
         item['sub_title'] =data['sub_title']
         item['result'] = data['result']
         item['incident'] = data['incident']
-        item['incident_lite'] = data['incident_lite']
-        item['laws'] = data['laws']
+        item['laws'] = laws_result
 
+        # print(item)
         yield item

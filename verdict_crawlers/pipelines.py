@@ -91,19 +91,19 @@ class MySQLPipeline:
 
         if item['crime_id'] == 1:
             spider.logger.info('提取特徵：\n(1)偷竊物是否與金錢相關 (2)是否遺棄贓物 (3)犯罪地點是否在室內 (4)竊盜方法是否具破壞性 (5)是否兩人(含)以上犯罪 (6)是否使用交通工具來輸送贓物 (7)是否有前科 (8)是否竊取之財物為被害人生財工具')
-            spider.logger.info('提取結果:', chinese_list)
+            spider.logger.info(f'提取結果: {chinese_list}')
             spider.logger.info(f'提取判刑年月數：大約會被判刑 {prison_term}個月')
         elif item['crime_id'] == 2:
             spider.logger.info('提取特徵：(1)是否有殺人未遂 (2)是否被害者為兒童 (3)是否有親屬關係 (4)加害者是否有精神疾病 (5)是否為金錢糾紛 (6)在過去是否有犯過罪 (7)是否為感情糾紛 (8)是否在過去有仇恨)')
-            spider.logger.info('提取結果:', chinese_list)
+            spider.logger.info(f'提取結果: {chinese_list}')
             spider.logger.info(f'提取判刑年月數：大約會被判刑 {prison_term[0]} 年又 {prison_term[1]} 個月，總月數 {prison_term[2]} 個月')
         elif item['crime_id'] == 3:
             spider.logger.info('提取特徵：(1)是否導致受害者受傷 (2)是否兩人(含)以上犯案 (3)是否使用刀械 (4)是否擁有前科 (5)是否有計畫犯罪 (6)是否被害人人數超過兩人(含) (7)是否提及犯案人因生活困境而強盜 (8)是否毀損物品或建築')
-            spider.logger.info('提取結果:', chinese_list)
+            spider.logger.info(f'提取結果: {chinese_list}')
             spider.logger.info(f'提取判刑年月數：大約會被判刑 {prison_term[0]} 年又 {prison_term[1]} 個月，總月數 {prison_term[2]} 個月')
         elif item['crime_id'] == 4:
             spider.logger.info('提取特徵：(1)是否有駕駛執照 (2)是否搭載其他乘客 (3)是否影響交通安全 (4)是否造成他人財產損害 (5)是否以駕駛車輛為職業 (6)是否肇事逃逸 (7)被撞者是否受有重傷 (8)當天天氣是否晴朗')
-            spider.logger.info('提取結果:', chinese_list)
+            spider.logger.info(f'提取結果: {chinese_list}')
             spider.logger.info(f'提取判刑年月數：大約會被判刑 {prison_term[0]} 年又 {prison_term[1]} 個月，總月數 {prison_term[2]} 個月')
         
         spider.logger.info(f'----------{new_id}-END----------')
